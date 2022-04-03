@@ -1,0 +1,71 @@
+version: "3.9"
+
+# NETWORK
+networks:
+  app-nw:
+    driver: bridge
+
+# SERVICES
+services:
+  java:
+    image: openjdk:11
+    ports:
+      - 8080:8080
+      - 8000:8000
+    networks:
+      - app-nw
+    environment:
+      - SERVER_PORT=8080
+      - MYSQL_URL=jdbc:mysql://mysqlserver/petclinic
+      - MYSQL_USER=petclinic
+      - MYSQL_PASSWORD=petclinic
+    volumes:
+      - ./:/app
+    working_dir: /app
+    command: ./mvnw spring-boot:run -Dspring-boot.run.profile=mysql -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000"
+  
+  mysqlServer:
+    image: mysql:8.0.23
+    ports:
+      - 3306:3306
+    networks:
+      - app-nw
+    environment:
+      - MYSQL_ROOT_PASSWORD=petclinic
+      - MYSQL_DATABASE=petclinic
+      - MYSQL_PASSWORD=petclinic
+    volumes:
+      # - ./db/data:/var/lib/mysql
+      - ./db/config/conf.d:/etc/mysql/conf.d
+
+# version: '3.8'
+# services:
+#   petclinic:
+#     build:
+#       context: .
+#     ports:
+#       - 8000:8000
+#       - 8080:8080
+#     environment:
+#       - SERVER_PORT=8080
+#       - MYSQL_URL=jdbc:mysql://mysqlserver/petclinic
+#     volumes:
+#       - ./:/app
+#     command: ./mvnw spring-boot:run -Dspring-boot.run.profiles=mysql -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000"
+
+#   mysqlserver:
+#     image: mysql:8.0.23
+#     ports:
+#       - 3306:3306
+#     environment:
+#       - MYSQL_ROOT_PASSWORD=
+#       - MYSQL_ALLOW_EMPTY_PASSWORD=true
+#       - MYSQL_USER=petclinic
+#       - MYSQL_PASSWORD=petclinic
+#       - MYSQL_DATABASE=petclinic
+#     volumes:
+#       - mysql_data:/var/lib/mysql
+#       - mysql_config:/etc/mysql/conf.d
+# volumes:
+#   mysql_data:
+#   mysql_config:
